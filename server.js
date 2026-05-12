@@ -15,6 +15,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api", require("./routes/authRoutes"));
 app.use("/api", require("./routes/uploadRoutes"));
 app.use("/api", require("./routes/passRoutes"));
+app.use("/api", require("./routes/songRoutes"));
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
