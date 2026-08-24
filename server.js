@@ -5,15 +5,12 @@ const dns = require("dns");
 
 const connectDB = require("./config/db");
 
-// Load environment variables
 dotenv.config();
 
-// DNS
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 
-// Middleware
 app.use(
   cors({
     origin: "*",
@@ -24,16 +21,13 @@ app.use(
 
 app.use(express.json());
 
-// Static uploads
 app.use("/uploads", express.static("uploads"));
 
-// Routes
 app.use("/api", require("./routes/authRoutes"));
 app.use("/api", require("./routes/uploadRoutes"));
 app.use("/api", require("./routes/passRoutes"));
 app.use("/api", require("./routes/songRoutes"));
 
-// Health check
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -41,7 +35,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -49,22 +42,12 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err);
-
-  res.status(500).json({
-    success: false,
-    message: "Internal server error",
-  });
-});
-
-// Port
 const PORT = process.env.PORT || 5000;
 
-// Start server after DB connection
 const startServer = async () => {
   try {
+    console.log("Connecting to MongoDB...");
+
     await connectDB();
 
     app.listen(PORT, "0.0.0.0", () => {

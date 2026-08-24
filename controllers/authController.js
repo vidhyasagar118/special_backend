@@ -1,12 +1,16 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 
 exports.loginUser = async (req, res) => {
   try {
     const { name, password } = req.body;
 
-    // Validate input
+    console.log("========== LOGIN ==========");
+    console.log("Name received:", name);
+    console.log("Database:", mongoose.connection.name);
+
     if (!name || !password) {
       return res.status(400).json({
         success: false,
@@ -14,32 +18,40 @@ exports.loginUser = async (req, res) => {
       });
     }
 
-    // Find user
+    const cleanName = name.trim();
+
     const user = await User.findOne({
-      name: name.trim(),
+      name: cleanName,
     });
 
+    console.log("User found:", !!user);
+
     if (!user) {
+      console.log("USER NOT FOUND:", cleanName);
+
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "User not found",
       });
     }
 
-    // Compare password with hashed password
+    console.log("User name in DB:", user.name);
+    console.log("Password field exists:", !!user.password);
+
     const passwordMatch = await bcrypt.compare(
       password,
       user.password
     );
 
+    console.log("Password match:", passwordMatch);
+
     if (!passwordMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Wrong password",
       });
     }
 
-    // JWT secret check
     if (!process.env.JWT_SECRET) {
       console.error("JWT_SECRET is missing");
 
@@ -49,7 +61,6 @@ exports.loginUser = async (req, res) => {
       });
     }
 
-    // Create token
     const token = jwt.sign(
       {
         userId: user._id.toString(),
@@ -60,6 +71,8 @@ exports.loginUser = async (req, res) => {
         expiresIn: "7d",
       }
     );
+
+    console.log("LOGIN SUCCESS");
 
     return res.status(200).json({
       success: true,
